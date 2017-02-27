@@ -95,7 +95,7 @@ public:
 	    //write data channel handshake
 	    m_core->S_AXI_WVALID = 1;
 	    m_core->S_AXI_WDATA = wval;    //example write data
-	 	m_core->S_AXI_WSTRB = 0;
+	 	m_core->S_AXI_WSTRB = 15;
 
 	    //write response channel handshake
 	    m_core->S_AXI_BREADY = 1;
@@ -121,13 +121,13 @@ public:
 	        }
 	        else tick();
 	    }
-	 
-	    //master clears aS_AXI_WVALID
+	 /*
+	    //master clears S_AXI_WVALID
 	    m_core->S_AXI_AWVALID = 0;
 	 
 	    //master clears S_AXI_WVALID
 	    m_core->S_AXI_WVALID = 0;
-	 
+	 */
 	    //wait for slave to indicate it has valid write response
 	    while(!m_core->S_AXI_BVALID)
 	    {
@@ -155,8 +155,22 @@ public:
 	 	m_core->S_AXI_ARPROT = 0;
 	    //read data channel handshake
 	    m_core->S_AXI_RREADY = 1;
-	 
-	   
+
+	    while(!m_core -> S_AXI_ARREADY)
+	    {
+	    	tick();
+	    }
+	 	tick();  //for the case S_AXI_ARREADY comes before S_AXI_ARVALID
+	 	m_core -> S_AXI_ARVALID = 0;
+
+	 	while(!m_core -> S_AXI_RVALID)
+	 	{
+
+	 		tick();
+	 	}
+	 	tick();
+	 	//m_core -> S_AXI_RREADY = 0;
+	  /* 
 	    int readys_read = 0;
 	    while(readys_read != 3)
 	     {
@@ -178,7 +192,7 @@ public:
 	        }
 	        else tick();
 	    }
-	 
+	 */
 	    rdata = m_core->S_AXI_RDATA;
 	    rresp = m_core->S_AXI_RRESP;
 	    printf("AXI Lite Read reponse = %d\n",rresp);
@@ -215,12 +229,12 @@ int main(int  argc, char **argv)
 	tb->tick();
 
 	unsigned waddr = 10;
-	unsigned wval = 15;
+	unsigned wval = 31;
 	unsigned wresp;
 	unsigned rdata;
 
 
-	while (main_time < 500)
+	while (main_time < 50)
     {
 		wresp = tb->axi_write(waddr,wval);
 		printf("Time=%2d, AXI Lite Write Response = %d\n",main_time,wresp);
