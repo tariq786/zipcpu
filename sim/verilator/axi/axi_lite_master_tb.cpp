@@ -69,81 +69,6 @@ public:
 	void	tick(void) {
 
 		TESTB<Vaxi_lite_slave>::tick(); //calling tick() in tb.h
-/****		m_core->eval();
-		m_core->i_clk = 1;
-
-		bool	writeout = true;
-
-		if ((m_debug)&&(writeout)) {
-			printf("%08lx-MMU: ", m_tickcount);
-			printf("(%s%s%s%s) %08x (%s%s%s)%08x%s %s %08x/%08x %s%s%s%s%s",
-				(m_core->i_ctrl_cyc_stb)?"CT":"  ",
-				(m_core->i_wbm_cyc)?"CYC":"   ",
-				(m_core->i_wbm_stb)?"STB":"   ",
-				(m_core->i_wb_we)?"WE":"  ",
-				(m_core->i_wb_addr),
-				(m_core->v__DOT__mem_cyc)?"CYC":"   ",
-				(m_core->v__DOT__mem_stb)?"STB":"   ",
-#define	v__DOT__mem_we	v__DOT__mut__DOT__r_we
-				(m_core->v__DOT__mem_we)?"WE":"  ",
-				(m_core->v__DOT__mem_addr),
-				(m_core->v__DOT__mem_err)?"ER":"  ",
-				(m_core->i_wb_we)?"<-":"->",
-				(m_core->i_wb_we)?m_core->i_wb_data:m_core->o_rtn_data,
-				(m_core->v__DOT__mem_we)?m_core->v__DOT__mut__DOT__r_data:m_core->v__DOT__mem_odata,
-				(m_core->o_rtn_stall)?"STALL":"     ",
-				(m_core->v__DOT__mut__DOT__setup_ack)?"S":" ",
-				(m_core->o_rtn_ack )?"ACK":"   ",
-				(m_core->o_rtn_miss)?"MISS":"    ",
-				(m_core->o_rtn_err )?"ERR":"   ");
-
-			printf("[%d,%d]",
-				m_core->v__DOT__mut__DOT__wr_vtable,
-				m_core->v__DOT__mut__DOT__wr_ptable);
-			printf("[%d,%d,%04x]",
-				m_core->v__DOT__mut__DOT__wr_control,
-				m_core->v__DOT__mut__DOT__z_context,
-				m_core->v__DOT__mut__DOT__r_context_word);
-		***/	/*
-			printf("[%08x,%08x-%08x]", 
-				m_core->v__DOT__mut__DOT__w_vtable_reg,
-				m_core->v__DOT__mut__DOT__w_ptable_reg,
-				m_core->v__DOT__mut__DOT__setup_data);
-			*/
-		/***	printf(" %s[%s%s@%08x,%08x]",
-				(m_core->v__DOT__mut__DOT__r_pending)?"R":" ",
-				(m_core->v__DOT__mut__DOT__r_we)?"W":" ",
-				(m_core->v__DOT__mut__DOT__r_valid)?"V":" ",
-				(m_core->v__DOT__mut__DOT__r_addr),
-				(m_core->v__DOT__mut__DOT__r_data));
-			printf("@%2x[%s%s%s][%s%s%s%s]",
-				(m_core->v__DOT__mut__DOT__s_tlb_addr),
-				(m_core->v__DOT__mut__DOT__s_pending)?"P":" ",
-				(m_core->v__DOT__mut__DOT__s_tlb_hit)?"HT":"  ",
-				(m_core->v__DOT__mut__DOT__s_tlb_miss)?"MS":"  ",
-				(m_core->v__DOT__mut__DOT__ro_flag)?"RO":"  ",
-				(m_core->v__DOT__mut__DOT__simple_miss)?"SM":"  ",
-				(m_core->v__DOT__mut__DOT__ro_miss)?"RM":"  ",
-				(m_core->v__DOT__mut__DOT__table_err)?"TE":"  ");
-				//(m_core->v__DOT__mut__DOT__cachable)?"CH":"  ");
-		***/	/*
-			printf(" M[%016lx]",
-				m_core->v__DOT__mut__DOT__r_tlb_match);
-			printf(" P[%3d] = 0x%08x, V=0x%08x, C=0x%08x, CTXT=%04x",
-				m_last_tlb_index,
-				m_core->v__DOT__mut__DOT__tlb_pdata[m_last_tlb_index],
-				m_core->v__DOT__mut__DOT__tlb_vdata[m_last_tlb_index],
-				m_core->v__DOT__mut__DOT__tlb_cdata[m_last_tlb_index],
-				m_core->v__DOT__mut__DOT__r_context_word);
-			*/
-		////	printf("\n");
-		/////}
-
-		m_core->eval();
-	//	m_core->S_AXI_ACLK = 0;
-		m_core->eval();
-
-		m_tickcount++;
 	}
 
 	void reset(void) {
@@ -155,17 +80,7 @@ public:
 		m_core->S_AXI_ARESETN  = 1;
 	}
 
-	/*void wb_tick(void) {
-		m_core->i_rst  = 0;
-		m_core->i_ctrl_cyc_stb = 0;
-		m_core->i_wbm_cyc  = 0;
-		m_core->i_wbm_stb  = 0;
-		tick();
-		assert(!m_core->o_rtn_ack);
-		assert(!m_core->o_rtn_err);
-	} */
-
-
+	
 	unsigned axi_write(unsigned waddr, unsigned wval) 
 	{
 		
@@ -222,6 +137,7 @@ public:
 	    wresp = m_core->S_AXI_BRESP;
 	    printf("AXI Lite Write Response = %d\n",wresp);
 	    //master clears bready
+	    tick();
 	    m_core->S_AXI_BREADY = 0;     
 	    tick();
 
@@ -273,10 +189,6 @@ public:
 	}
 
 
-//	bool	debug(void) const { return m_debug; }
-//	bool	debug(bool nxtv) { return m_debug = m_core->S_AXI_RDATA;}
-
-
 }; //end of AXILITEMASTER_TB class
 
 
@@ -287,7 +199,7 @@ int main(int  argc, char **argv)
 	AXILITEMASTER_TB	*tb = new AXILITEMASTER_TB;
 	//unsigned 	*rdbuf; // *mbuf;
 	//unsigned	mlen = (1<<LGMEMSIZE), c, blen;
-
+	tb->opentrace("axi_tb.vcd");
 	/*
 	#ifdef VCD_DUMP
 	   	   Verilated::traceEverOn(true);
